@@ -1,6 +1,3 @@
-SELECT *
-FROM sales.staffs;
-
 /* First, query an alphabetical ordered list of all first names in sales.staffs table, immediately followed by first letter each last names and the manager id as a parenthetical (i.e.: enclosed in parentheses).
 Next, query the number of ocurrences of each manager id in sales.staffs. Sort the occurrences in ascending order, and output them in the following format:
 [Manager name] has total of [subordinate_count] subordinates.*/
