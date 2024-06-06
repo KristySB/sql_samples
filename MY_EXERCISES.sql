@@ -127,18 +127,49 @@ LEFT JOIN(
 )e ON s.store_id = e.store_id;
 
 -- Query the median of all list_prices in sales.order_items table.
-DECLARE @n INT;
-SELECT @n = CEILING(COUNT(CONVERT(DEC(10,2), list_price)) / 2.00) FROM sales.order_items;
+BEGIN;
+	DECLARE @m DEC(10,2);
+	SELECT @m = CONVERT(DEC(10,2), COUNT(list_price)) /2.00
+		FROM sales.order_items;
 
-WITH cte AS(
-	SELECT 
-		list_price, 
-		ROW_NUMBER() OVER(PARTITION BY NULL ORDER BY list_price) rownum
-	FROM sales.order_items
-)
-SELECT list_price
-FROM cte 
-WHERE rownum = @n;
+	DECLARE @varch VARCHAR(128) = CONVERT(VARCHAR(128), @m);
+
+	IF SUBSTRING(@varch, CHARINDEX('.', @varch) - 1, LEN(@varch)) LIKE '%.0%'
+	BEGIN
+		DECLARE @n INT = @m + 1;
+		DECLARE @median DECIMAL(10,2);
+		SELECT @median = SUM(list_price) / 2.00
+		FROM(
+			SELECT rownum, list_price
+			FROM(
+				SELECT 
+				list_price,
+				ROW_NUMBER() OVER(
+				ORDER BY list_price
+				) rownum
+				FROM sales.order_items
+			) t
+			WHERE rownum IN(@m, @n)
+		) t;
+		SELECT @median;
+	END
+
+	ELSE
+	BEGIN
+		DECLARE @median2 DEC(10,2);
+		SELECT @median2 = list_price
+		FROM(
+			SELECT 
+				list_price,
+				ROW_NUMBER() OVER(
+				ORDER BY list_price
+			) rownum
+			FROM sales.order_items
+		) t
+		WHERE rownum = CEILING(@m);
+		SELECT @median2;
+	END	
+END;
 
 -- Query the smallest list_price from sales.order_items that is greater than 449. Round your answer to 1 decimal place.
 SELECT CONVERT(DEC(10,1), MIN(list_price)) 
