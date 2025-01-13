@@ -233,6 +233,26 @@ LEFT JOIN(
 WHERE order_count IS NULL
 ORDER BY day_of_year;
 
+-- Simplier solution
+WITH days_2016 AS(
+	SELECT CAST('2016-01-01' AS DATE) AS day_in_year
+	UNION ALL
+	SELECT DATEADD(DAY, 1, day_in_year)
+	FROM days_2016
+	WHERE day_in_year < '2016-12-31'
+), days_off AS(
+	SELECT day_in_year
+	FROM days_2016
+	WHERE day_in_year NOT IN(
+		SELECT order_date
+		FROM sales.orders
+		WHERE YEAR(order_date) = 2016
+	)
+)
+SELECT *
+FROM days_off
+OPTION (MAXRECURSION 366);
+
 -- Find all prime numbers up to 1000.
 WITH cte AS(
 	SELECT ROW_NUMBER() OVER(ORDER BY object_id) num
