@@ -8,7 +8,7 @@ Version: 1.0
 --------------------------------------------------------------------
 */
 
-USE test_database;
+USE BikeStores2;
 
 SET IDENTITY_INSERT production.brands ON;  
 
